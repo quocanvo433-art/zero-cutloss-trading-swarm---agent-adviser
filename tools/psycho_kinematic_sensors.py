@@ -119,7 +119,7 @@ def _z_score(value: float, series: list) -> float:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# SENSOR 1: HDR — Hope-Decay Rate (Luộc ếch từ từ)
+# SENSOR 1: HDR — Hope-Decay Rate (Boiling Frog Slowly)
 # ══════════════════════════════════════════════════════════════════════════════
 
 def compute_hdr(ticker: str = "BTC-USD", sma_period: int = 20,
@@ -208,7 +208,7 @@ def compute_hdr(ticker: str = "BTC-USD", sma_period: int = 20,
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# SENSOR 2: CWG — Cognitive Whipsaw Grinder (Xay thịt)
+# SENSOR 2: CWG — Cognitive Whipsaw Grinder (Choppy Meat Grinder)
 # ══════════════════════════════════════════════════════════════════════════════
 
 def compute_cwg(ticker: str = "BTC-USD", sma_period: int = 20,
@@ -292,7 +292,7 @@ def compute_cwg(ticker: str = "BTC-USD", sma_period: int = 20,
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# SENSOR 3: DTA — Dopamine Trap Asymmetry (Mèo chết nảy)
+# SENSOR 3: DTA — Dopamine Trap Asymmetry (Dead Cat Bounce)
 # ══════════════════════════════════════════════════════════════════════════════
 
 def compute_dta(ticker: str = "BTC-USD", lookback: int = 30) -> Dict[str, Any]:
@@ -386,7 +386,7 @@ def compute_dta(ticker: str = "BTC-USD", lookback: int = 30) -> Dict[str, Any]:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# SENSOR 3: MPI — Maximum Pain Integral (Tích phân Nỗi đau)
+# SENSOR 3: MPI — Maximum Pain Integral (Capitulation Pain Integral)
 # ══════════════════════════════════════════════════════════════════════════════
 
 def compute_mpi(ticker: str = "BTC-USD", lookback: int = 60) -> Dict[str, Any]:

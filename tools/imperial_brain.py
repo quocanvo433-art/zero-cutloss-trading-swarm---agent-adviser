@@ -305,5 +305,5 @@ except Exception as _e:
 if __name__ == "__main__":
     # Quick test of A04 thinking
     print("--- Brain Experiment ---")
-    res = brain.think_as("A04", "Phân tích Wyckoff cho BTC hiện tại.")
+    res = brain.think_as("A04", "Wyckoff analysis for BTC currently.")
     print(f"A04 response:\n{res[:300]}...")

@@ -69,7 +69,7 @@ HALL_CATEGORIES = {
     "indicator_misuse":    ["RSI", "MACD", "BB Width", "Bollinger", "overbought"],
     "volume_neglect":      ["volume", "volume size", "diminishing volume", "volume confirmation"],
     "phase_confusion":     ["Phase C Distribution", "UTAD", "Upthrust Against"],
-    "wave_completion":     ["5-wave completion", "sóng 5", "hoàn tất", "completed"],
+    "wave_completion":     ["5-wave completion", "wave 5", "completed"],
     "sentiment_override":  ["emotional sentiment", "risen significantly", "already priced in"],
 }
 
@@ -202,11 +202,11 @@ class A04EngramHelper:
         )
 
     # ══════════════════════════════════════════════════════════════════════════
-    # HÀM 1: DISTILL BOOST (1000 → 150) — Tinh hoa từ engram_a04.py
+    # FUNCTION 1: DISTIL BOOST (1000 → 150) — Essence from engram_a04.py
     # ══════════════════════════════════════════════════════════════════════════
 
     # ══════════════════════════════════════════════════════════════════════════
-    # HÀM 2: DISTILL GENESIS (1000 → 150) — Tinh hoa từ engram_genesis.py
+    # FUNCTION 2: DISTIL GENESIS (1000 → 150) — Essence from engram_genesis.py
     # ══════════════════════════════════════════════════════════════════════════
 
 
@@ -411,11 +411,11 @@ class A04EngramHelper:
         
         full_prompt = f"{GENESIS_SPEC_V17}\n\n"
         full_prompt += f"--- MASTER LATTICE LEGACY MECHANISM (LAST 10 FILES) ---\n{context_str}\n\n"
-        full_prompt += "🔥 NHIỆM VỤ MASTER LATTICE (GLOBAL SYNTHESIS):\n"
+        full_prompt += "🔥 MASTER LATTICE TASK (GLOBAL SYNTHESIS):\n"
         full_prompt += "Perform a 'GENETIC AUDIT' across all 160 lessons. Your task is to extract 'MASTER PRINCIPLES' regarding multi-frame convergence/phase shift and MM manipulative behavior — quantity depends on quality, NOT MANDATORILY FIXED.\n"
         full_prompt += "Do not simply repeat Wyckoff or Elliott; reveal the CORE NATURE of price dynamics distilled from analyzing thousands of hours of data.\n"
-        full_prompt += "🎯 CHIẾN THUẬT 'CHIM ƯNG SĂN ĐẠI BÀNG' (Hunt the Hunter): Phân tách rõ nơi Elite rải mồi (Bait), từ đó vạch ra ĐIỂM VÀO LỆNH ngầm (Limit Order an toàn) để rình rập và ĐIỂM CUT-LOSS TUYỆT ĐỐI nằm ngoài Cương Vực quét râu (Wick Sweep Zone).\n"
-        full_prompt += "⚠️ YÊU CẦU CHẾT CHÓC: CHỈ ĐƯỢC PHÉP TRẢ VỀ RAW JSONL. KHÔNG MARKDOWN, KHÔNG GIẢI THÍCH. MỖI DÒNG LÀ 1 JSON OBJECT.\n"
+        full_prompt += "🎯 'HAWK HUNTS EAGLE' TACTIC (Hunt the Hunter): Clearly distinguish where the Elite distributes bait, thereby mapping out a stealth entry point (safe Limit Order) to ambush, and an ABSOLUTE stop-loss point outside the Wick Sweep Zone.\n"
+        full_prompt += "⚠️ DEATH REQUIREMENT: ONLY RETURN RAW JSONL. NO MARKDOWN, NO EXPLANATIONS. EACH LINE MUST BE A SINGLE JSON OBJECT.\n"
         
         log.info(f"🧬 [MASTER_LATTICE] Synthesizing knowledge from {len(last_files)} files...")
         # DNA v17.1: Use brain_mode='A04_MASTER' for Router to summon Gemini 3.1 Pro (Max Elite)

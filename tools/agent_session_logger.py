@@ -721,7 +721,7 @@ def _build_full_drift(agent_id: str) -> str:
     """
     parts = [_DRIFT_SOUL_ANCHOR]
 
-    # ── Tầng 3: Deep (Toàn cảnh — checkpoint) — Đặt trước để LLM có bối cảnh lớn ──
+    # ── Tier 3: Deep (Macro overview — checkpoint) — Placed first for macro context ──
     deep = _build_deep_drift(agent_id)
     if deep:
         parts.append(deep)
@@ -731,7 +731,7 @@ def _build_full_drift(agent_id: str) -> str:
 
     parts.append("")  # Separator
 
-    # ── Tầng 2: Weekly (7 ngày — xu hướng trung hạn) ──
+    # ── Tier 2: Weekly (7 days — medium-term trend) ──
     weekly = _build_weekly_drift(agent_id)
     if weekly:
         parts.append(weekly)
@@ -740,7 +740,7 @@ def _build_full_drift(agent_id: str) -> str:
 
     parts.append("")  # Separator
 
-    # ── Tầng 1: Hot (3 giờ — biến động tức thì) — Đặt cuối để LLM đọc cuối cùng ──
+    # ── Tier 1: Hot (3 hours — immediate volatility) — Placed last for recency bias ──
     hot = _build_hot_drift(agent_id)
     if hot:
         parts.append(hot)
@@ -796,7 +796,7 @@ def estimate_token_count(agent_id: str) -> int:
         except (ValueError, TypeError):
             pass
 
-    # Quét tất cả JSONL files
+    # Scan all JSONL files
     agent_dir = LOGS_BASE / agent_id.upper()
     total_chars = 0
     for jsonl_file in sorted(agent_dir.glob("*.jsonl")):
@@ -806,7 +806,7 @@ def estimate_token_count(agent_id: str) -> int:
                     line = line.strip()
                     if not line:
                         continue
-                    # Nếu có checkpoint cuối, chỉ đếm entries sau checkpoint
+                    # If last checkpoint exists, only count entries after checkpoint
                     if last_ckpt_ts:
                         try:
                             entry = json.loads(line)
@@ -1173,7 +1173,7 @@ def get_recent_verdicts(agent_id: str, n: int = 6) -> list:
     try:
         with open(verdict_file, "r", encoding="utf-8") as f:
             verdicts = json.load(f)
-        return verdicts[-n:]  # N cụm gần nhất
+        return verdicts[-n:]  # N most recent groups
     except Exception:
         return []
 

@@ -945,7 +945,7 @@ def check_chroma_write_allowed(doc_type: str = "unknown") -> Tuple[bool, str]:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# AGENT BEHAVIOR MAP — Từng agent làm gì ở từng mode
+# AGENT BEHAVIOR MAP — What each agent does in each mode
 # ══════════════════════════════════════════════════════════════════════════════
 
 """
