@@ -1847,7 +1847,7 @@ def _daemon_detector():
                             if result["status"] != "CLEAN":
                                 log.warning(f"REALTIME INJECTION: {channel_name}")
                                 injection_detected = True
-                                        scan_result = result
+                                scan_result = result
                                      
                         tc_result = None
                         if tc_available and scanned:
