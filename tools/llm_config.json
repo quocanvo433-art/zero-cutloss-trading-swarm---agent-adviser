@@ -1,0 +1,194 @@
+{
+  "_version": "v85.4 — Sovereign Cloud-Free Routing",
+  "_updated": "2026-04-06",
+  "_note": "This file is read by cloud_health_prober.py (ComputeBudgetCalibrator) and agent_session_logger.py. The main routing constants are located in llm_router.py.",
+
+  "models": {
+    "gemini-2.5-flash-lite": {
+      "provider": "gemini",
+      "role": "canary",
+      "rpd": 99999,
+      "rpm": 9999,
+      "note": "Unlimited — used as canary ping by cloud_health_prober"
+    },
+    "gemini-3-flash": {
+      "provider": "gemini",
+      "role": "flash",
+      "rpd": 2000,
+      "rpm": 30,
+      "note": "2 accounts × 1000 RPD = 2000. RPM = 15/acc × 2 = 30"
+    },
+    "gemini-2.5-pro": {
+      "provider": "gemini",
+      "role": "pro",
+      "rpd": 100,
+      "rpm": 4,
+      "note": "2 accounts × 50 RPD = 100. RPM = 2/acc × 2 = 4. Deep reasoning"
+    },
+    "gemini-3.1-pro-preview": {
+      "provider": "gemini",
+      "role": "pro_preview",
+      "rpd": 100,
+      "rpm": 4,
+      "note": "Preview model — same quota as Pro"
+    },
+    "gemini-3-flash-preview": {
+      "provider": "gemini",
+      "role": "flash_preview",
+      "rpd": 2000,
+      "rpm": 30,
+      "note": "Preview model — same quota as Flash"
+    },
+    "gemini-3.1-flash-lite-preview": {
+      "provider": "gemini",
+      "role": "lite_preview",
+      "rpd": 99999,
+      "rpm": 9999,
+      "note": "Unlimited — ChromaDB enrichment, parse JSON"
+    },
+    "qwen/qwen3-32b": {
+      "provider": "groq",
+      "role": "genesis_scan",
+      "rpd": 1000,
+      "rpm": 60,
+      "keys_count": 4,
+      "note": "4 Groq keys rotated. RPD per key = 1000"
+    },
+    "qwen-3-235b-a22b-instruct-2507": {
+      "provider": "cerebras",
+      "role": "boosting_judge",
+      "rpd": 14400,
+      "rpm": 30,
+      "keys_count": 4,
+      "note": "4 Cerebras keys. DPO scoring (CHOSEN/REJECTED)"
+    },
+    "qwen/qwen3.5-plus-02-15": {
+      "provider": "openrouter_paid",
+      "role": "16d_vector",
+      "rpd": 99999,
+      "rpm": 99999,
+      "hourly_limit": 5,
+      "note": "PAID — A04/A05/A11/A12 (1 req/h each), ENGRAM/MASTER (5 req/h shared)"
+    },
+    "deepseek/deepseek-r1:free": {
+      "provider": "openrouter_free",
+      "role": "fallback",
+      "rpd": 99999,
+      "rpm": 99999,
+      "note": "Free tier — Final safety net before cloud fallback"
+    },
+    "nvidia/nemotron-3-super-120b-a12b:free": {
+      "provider": "openrouter_free",
+      "role": "a10_primary",
+      "rpd": 99999,
+      "rpm": 99999,
+      "note": "A10 Shadow — Tier 1"
+    },
+    "nvidia/nemotron-3-nano-30b-a3b:free": {
+      "provider": "openrouter_free",
+      "role": "a03_fallback",
+      "rpd": 99999,
+      "rpm": 99999,
+      "note": "A03 news scraping fallback"
+    },
+    "nvidia/nemotron-mini-4b-instruct:free": {
+      "provider": "openrouter_free",
+      "role": "a03_mini",
+      "rpd": 99999,
+      "rpm": 99999,
+      "context_length": 4096,
+      "note": "A03 main news scraping, A10 final fallback Tier 3"
+    },
+    "qwen/qwen3.5-flash-02-23": {
+      "provider": "openrouter_paid",
+      "role": "a10_final_fallback",
+      "rpd": 99999,
+      "rpm": 99999,
+      "context_length": 32768,
+      "parameters": "9B",
+      "architecture": "Dense",
+      "pricing": "paid_lightweight",
+      "or_model_id": "qwen/qwen3.5-flash-02-23",
+      "const": "MOR_Q35_9B",
+      "note": "A10 Fallback Tier 4 final — paid but cheap (lightweight 9B), used when the 3 previous tiers (Nemotron 120B + Qwen 80B + Mini 4B) all fail. Does NOT consume Plus quota"
+    },
+    "qwen/qwen3-max-thinking": {
+      "provider": "openrouter_paid",
+      "role": "fallback_supreme",
+      "rpd": 120,
+      "rpm": 5,
+      "hourly_limit": 5,
+      "note": "Max Thinking — Final premium safety net for Qwen 3.5 Plus (ENGRAM/MASTER/ALGO_PLUS)"
+    },
+    "openai/gpt-oss-120b:free": {
+      "provider": "openrouter_free",
+      "role": "emf_reasoning",
+      "rpd": 99999,
+      "rpm": 99999,
+      "note": "A11, A12, Session — Deep reasoning"
+    },
+    "qwen/qwen3-next-80b-a3b-instruct:free": {
+      "provider": "openrouter_free",
+      "role": "genesis_backup",
+      "rpd": 99999,
+      "rpm": 99999,
+      "note": "Genesis backup, A10 fallback Tier 2"
+    },
+    "qwen/qwen3-coder:free": {
+      "provider": "openrouter_free",
+      "role": "clawcode_coder",
+      "rpd": 99999,
+      "rpm": 99999,
+      "note": "ClawCode Coder — 480B A35B, Agentic Coding 262K ctx"
+    },
+    "arcee-ai/trinity-large-preview:free": {
+      "provider": "openrouter_free",
+      "role": "clawcode_coordinator",
+      "rpd": 99999,
+      "rpm": 99999,
+      "note": "ClawCode Coordinator — 400B A13B MoE"
+    },
+    "nousresearch/hermes-3-llama-3.1-405b:free": {
+      "provider": "openrouter_free",
+      "role": "clawcode_coordinator_fallback",
+      "rpd": 99999,
+      "rpm": 99999,
+      "note": "Coordinator Fallback Tier 2"
+    },
+    "qwen/qwen3.5-35b-a3b": {
+      "provider": "openrouter_paid",
+      "role": "clawcode_coordinator_paid",
+      "rpd": 99999,
+      "rpm": 99999,
+      "note": "Coordinator Fallback Tier 3 (PAID)"
+    },
+    "qwen/qwen3-coder-flash:free": {
+      "provider": "openrouter_free",
+      "role": "clawcode_coder_flash",
+      "rpd": 99999,
+      "rpm": 99999,
+      "note": "Coder Fallback Tier 3"
+    },
+    "deepseek/deepseek-r1-distill-qwen-32b": {
+      "provider": "openrouter_free",
+      "role": "clawcode_verifier",
+      "rpd": 99999,
+      "rpm": 99999,
+      "note": "ClawCode Verifier — Detects branching errors and AST reasoning"
+    }
+  },
+
+  "routing_summary": {
+    "GENESIS": "Qwen3-Next 80B (OR) → Groq 32B ×4 key",
+    "ENGRAM_MASTER": "Qwen 3.5 Plus PAID (5/h)",
+    "BOOSTING": "Cerebras 235B ×4 key",
+    "16D_VECTOR": "Qwen 3.5 Plus PAID (1/h each A04/A05/A11/A12)",
+    "A10": "Nemotron 120B → Qwen3-Next 80B → Nemotron Mini 4B → Qwen3.5-9B Free (final fallback, NOT paid)",
+    "A03": "Nemotron Mini 4B (Cloud)",
+    "A06_A07": "Cloud Fallback Engine",
+    "FALLBACK": "Qwen 3.6 Plus (OR Free)",
+    "CLAW_COOR": "Trinity 400B → Hermes 405B → Qwen 3.5 35B",
+    "CLAW_CODER": "Qwen3 Coder 480B → Qwen3 Coder Flash",
+    "CLAW_VERIFIER": "Deepseek R1 Distill Qwen 32B"
+  }
+}
