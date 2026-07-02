@@ -1,0 +1,230 @@
+# ════════════════════════════════════════════════════════════════════════
+# 🔱 ZERO CUTLOSS EMPIRE — Docker Compose Production Stack (Public Cloud-Only)
+# ════════════════════════════════════════════════════════════════════════
+# Architecture: 11 Agent Trading + 1 ClawCode + Services
+# Routing: Cloud-Only LLM Routing
+#
+# ┌─── INTERNAL NETWORK (zcl_internal bridge network) ──────────────┐
+# │ Redis     : redis://redis:6379        (internal, password-protected)│
+# │ ChromaDB  : http://chroma:8000        (internal, vector DB)        │
+# │ Grafana   : http://grafana:3000       (internal, dashboard)        │
+# │ Redlib    : http://redlib:8080        (internal, Reddit proxy)     │
+# ├─── EXPOSED TO HOST (localhost only, NOT public) ────────────────┤
+# │ Redis     : 127.0.0.1:6379   (for host tools, MCP, debug)       │
+# │ Grafana   : 127.0.0.1:3000   (for user browser access)          │
+# │ Redlib    : 127.0.0.1:8080   (for A03 crawling Reddit via proxy)│
+# └──────────────────────────────────────────────────────────────────┘
+# ════════════════════════════════════════════════════════════════════════
+
+# ── Agent Base Template ──────────────────────────────────────────────
+x-agent-base: &agent-base
+  build:
+    context: .
+    dockerfile: Dockerfile
+  restart: unless-stopped
+  env_file:
+    - ./config/.env
+  depends_on:
+    base_agent:
+      condition: service_completed_successfully
+    redis:
+      condition: service_healthy
+  volumes:
+    - ./:/app
+    - playwright_sessions:/app/playwright_sessions
+    - huggingface_cache:/root/.cache/huggingface
+    - chroma_data:/chroma/chroma
+  networks:
+    - zcl_internal
+  environment:
+    - PYTHONUNBUFFERED=1
+    - PYTHONDONTWRITEBYTECODE=1
+    - PYTHONPATH=/app:/app/tools:/app/scripts
+    - TZ=Asia/Ho_Chi_Minh
+    # ── Internal Service Addresses (via Docker DNS) ──
+    - REDIS_URL=redis://:${REDIS_PASSWORD:-9fa26c1040fa0f8040018ec435a2c981e2b368059a3cbf22ad08eba0d2699b5e}@redis:6379
+    - REDIS_HOST=redis
+    - REDIS_PORT=6379
+    - CHROMA_URL=http://chroma:8000
+    - CHROMA_HOST=chroma
+    - CHROMA_PORT=8000
+
+services:
+  # ════════════════════════════════════════════════════════════════════
+  # BUILD-ONLY: Base Agent Image (runs once to build, then exits)
+  # ════════════════════════════════════════════════════════════════════
+  base_agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: zero_cutloss_empire-imperial_agent:latest
+    command: "true"
+    networks:
+      - zcl_internal
+
+  # ════════════════════════════════════════════════════════════════════
+  # CORE INFRASTRUCTURE & DATABASE
+  # ════════════════════════════════════════════════════════════════════
+  redis:
+    image: redis:7-alpine
+    container_name: zcl_redis
+    restart: unless-stopped
+    networks:
+      - zcl_internal
+    ports:
+      # 127.0.0.1:6379 → for host tools (MCP Server, redis-cli debug)
+      - "127.0.0.1:6379:6379"
+      - "[::1]:6379:6379"
+    volumes:
+      - redis_data:/data
+    command: >
+      redis-server --save 60 1 --loglevel warning --requirepass "${REDIS_PASSWORD:-9fa26c1040fa0f8040018ec435a2c981e2b368059a3cbf22ad08eba0d2699b5e}"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-9fa26c1040fa0f8040018ec435a2c981e2b368059a3cbf22ad08eba0d2699b5e}", "--no-auth-warning", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  chroma:
+    image: chromadb/chroma:latest
+    container_name: zcl_chroma
+    restart: unless-stopped
+    networks:
+      - zcl_internal
+    volumes:
+      # Preserves collections
+      - chroma_data:/chroma/chroma
+    expose:
+      # Internal expose only (http://chroma:8000)
+      - "8000"
+
+  redlib:
+    image: quay.io/redlib/redlib:latest
+    container_name: zcl_redlib
+    restart: unless-stopped
+    networks:
+      - zcl_internal
+    ports:
+      - "127.0.0.1:8080:8080"
+
+  # ════════════════════════════════════════════════════════════════════
+  # PHASE 0: SUPPORTING SERVICES
+  # ════════════════════════════════════════════════════════════════════
+  api_gateway:
+    <<: *agent-base
+    container_name: zcl_api_gateway
+    command: [ "python", "/app/tools/api_gateway.py" ]
+
+  elite_a07:
+    <<: *agent-base
+    container_name: zcl_elite_a07
+    command: [ "python", "/app/agents/logic/a07_elite_apex.py" ]
+
+  immunity_a09:
+    <<: *agent-base
+    container_name: zcl_immunity_a09
+    command: [ "python", "/app/agents/logic/a09_immunity.py", "--daemon" ]
+
+  dpo_evaluator:
+    <<: *agent-base
+    container_name: zcl_dpo_evaluator
+    command: [ "python", "/app/agents/logic/a05_evaluator.py" ]
+
+  # ════════════════════════════════════════════════════════════════════
+  # PHASE 1: CRAWLERS / SENSORS
+  # ════════════════════════════════════════════════════════════════════
+  hound_a01:
+    <<: *agent-base
+    container_name: zcl_hound_a01
+    command: [ "python", "/app/agents/logic/a01_wrapper.py" ]
+
+  phantom_a02:
+    <<: *agent-base
+    container_name: zcl_phantom_a02
+    command: [ "python", "/app/agents/logic/a02_phantom.py" ]
+
+  emf_collector:
+    <<: *agent-base
+    container_name: zcl_emf_collector
+    command: [ "python", "/app/agents/logic/a10_signal_collector.py" ]
+
+  # ════════════════════════════════════════════════════════════════════
+  # PHASE 2: SYNTHESIZERS
+  # ════════════════════════════════════════════════════════════════════
+  social_a03:
+    <<: *agent-base
+    container_name: zcl_social_a03
+    command: [ "python", "/app/agents/logic/a03_social_crawler.py", "--daemon" ]
+
+  emf_analyzer:
+    <<: *agent-base
+    container_name: zcl_emf_analyzer
+    command: [ "python", "/app/agents/logic/a11_intent_analyzer.py", "--run" ]
+
+  aeo_detective:
+    <<: *agent-base
+    container_name: zcl_aeo_detective
+    command: [ "python", "/app/agents/logic/a12_detective.py", "--run" ]
+
+  swarm_a08:
+    <<: *agent-base
+    container_name: zcl_swarm_a08
+    command: [ "python", "-u", "/app/agents/logic/a08_swarm_engine.py" ]
+
+  # ════════════════════════════════════════════════════════════════════
+  # PHASE 3: SCHOLAR
+  # ════════════════════════════════════════════════════════════════════
+  scholar_brain:
+    <<: *agent-base
+    container_name: zcl_scholar_a04
+    command: [ "bash", "-c", "python /app/scripts/a04_crawler.py >> /app/logs/a04_crawler.log 2>&1 & python /app/agents/logic/a04_brain.py --realtime" ]
+
+  # ════════════════════════════════════════════════════════════════════
+  # CLAWCODE INTEGRATION
+  # ════════════════════════════════════════════════════════════════════
+  claw_agentic_code:
+    <<: *agent-base
+    container_name: zcl_claw_coder
+    command: [ "python", "/app/tools/nemoclaw_incubator.py" ]
+
+  # ════════════════════════════════════════════════════════════════════
+  # A04 BOOSTING JUDGE (Runs manually — no daemon, no heartbeat)
+  # Run: docker compose run boost_claw
+  # Or:  docker compose --profile manual up boost_claw
+  # ════════════════════════════════════════════════════════════════════
+  boost_claw:
+    <<: *agent-base
+    container_name: zcl_boost_claw
+    command: [ "python", "/app/agents/logic/a04_boosting.py" ]
+    restart: "no"
+    profiles:
+      - manual
+
+  # ════════════════════════════════════════════════════════════════════
+  # A06 BUTLER TELEGRAM (Zero Cutloss Syndicate)
+  # ════════════════════════════════════════════════════════════════════
+  openclaw_core:
+    <<: *agent-base
+    container_name: Zero_Cutloss_Syndicate
+    command: [ "python", "/app/agents/logic/a06_wrapper.py" ]
+
+# ════════════════════════════════════════════════════════════════════════
+# VOLUMES — Named volumes mapped to data
+# ════════════════════════════════════════════════════════════════════════
+volumes:
+  redis_data:
+    name: zero_cutloss_empire_redis_data
+  playwright_sessions:
+    name: zero_cutloss_empire_playwright_sessions
+  huggingface_cache:
+    name: zero_cutloss_empire_hf_cache
+  chroma_data:
+    name: zero_cutloss_empire_chroma_data
+
+# ════════════════════════════════════════════════════════════════════════
+# NETWORKS — Internal bridge network
+# ════════════════════════════════════════════════════════════════════════
+networks:
+  zcl_internal:
+    name: zcl_internal
+    driver: bridge
